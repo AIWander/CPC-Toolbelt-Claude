@@ -1,0 +1,40 @@
+{
+  "name": "aiwander-cpc-toolbelt",
+  "displayName": "CPC Toolbelt",
+  "version": "0.1.0",
+  "description": "AIwander CPC tools for Claude: Hands automation skills, optional Workflow / Manager / Voice guidance, and Cache path setup. Does not include Autonomous.",
+  "author": {
+    "name": "AIwander",
+    "email": "contact@aiwander.ai",
+    "url": "https://aiwander.ai"
+  },
+  "homepage": "https://aiwander.ai",
+  "repository": "https://github.com/AIWander/CPC-Toolbelt-Claude",
+  "license": "Apache-2.0",
+  "keywords": [
+    "cpc",
+    "hands",
+    "automation",
+    "workflow",
+    "manager",
+    "voice",
+    "aiwander",
+    "toolbelt"
+  ],
+  "userConfig": {
+    "cpc_root": {
+      "type": "directory",
+      "title": "CPC install root",
+      "description": "Windows folder that contains servers\\hands.exe (usually C:\\CPC). Used by setup skills; not uploaded anywhere.",
+      "default": "C:\\CPC",
+      "required": true
+    },
+    "cpc_cache": {
+      "type": "directory",
+      "title": "Cache path",
+      "description": "Local Cache directory for continuity skills (default C:\\CPC\\cache). Path + skills only; no Cache MCP.",
+      "default": "C:\\CPC\\cache",
+      "required": true
+    }
+  }
+}
