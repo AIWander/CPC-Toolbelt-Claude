@@ -7,7 +7,7 @@ Blog: https://claude.com/blog/build-plugins-for-claude
 
 ## What this repo is
 
-**Plugin bundle** (skills + `userConfig`), not a remote MCP connector.
+**Plugin bundle** (skills + `userConfig` + stdio `.mcp.json`), not a remote MCP connector.
 
 - Repository: `https://github.com/AIWander/CPC-Toolbelt-Claude`
 - Plugin path: repository root (contains `.claude-plugin/plugin.json`)
@@ -16,6 +16,7 @@ Blog: https://claude.com/blog/build-plugins-for-claude
 ## Preflight
 
 ```bash
+node scripts/validate.mjs
 claude plugin validate .
 ```
 
@@ -33,15 +34,15 @@ Then in the portal: Submit new → **Plugin bundle** → paste repo URL → **Va
 
 | Question | Suggested answer |
 |---|---|
-| Reads or stores personal data? | Only local paths the user configures (`cpc_root`, `cpc_cache`). Skills run in Claude; no AIwander backend in this package. |
-| Sends data to services other than declared connectors? | No. Any MCP traffic goes to connectors the user already configured (e.g. local Hands). |
+| Reads or stores personal data? | Only local paths the user configures (`HANDS_HOME`, optional `CPC_ROOT` and `CPC_CACHE`). Empty values resolve on the machine at runtime. Skills run in Claude; no AIwander backend in this package. |
+| Sends data to services other than declared connectors? | No. Any MCP traffic goes to the stdio servers the user already configured (local Hands). |
 | Retention | No plugin-side retention. |
 | Under 18? | No. |
 
 ## Not in this submission
 
 - Remote Hands HTTPS connector (submit separately under **MCP connector** when you have a public `https://` endpoint + OAuth/privacy docs).
-- Autonomous / port 7771.
+- Autonomous. It is a separate product and is not wired into this pack. This pack does not publish a port list.
 - Programmer as a default MCP.
 - Compiled `hands.exe` binaries inside the plugin folder.
 
