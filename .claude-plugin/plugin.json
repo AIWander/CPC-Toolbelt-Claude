@@ -22,19 +22,20 @@
     "toolbelt"
   ],
   "userConfig": {
+    "HANDS_HOME": {
+      "type": "directory",
+      "title": "Hands install home",
+      "description": "Directory that contains servers/hands.exe. Leave empty to resolve %LOCALAPPDATA%\\AIWander\\Hands at runtime (the current user's application-data directory plus AIWander/Hands when that variable is unset). The stdio launcher reads this value at startup."
+    },
     "cpc_root": {
       "type": "directory",
-      "title": "CPC install root",
-      "description": "Windows folder that contains servers\\hands.exe (usually C:\\CPC). Used by setup skills; not uploaded anywhere.",
-      "default": "C:\\CPC",
-      "required": true
+      "title": "CPC install root (back-compat)",
+      "description": "Optional. Used as the Hands home only when HANDS_HOME is unset. Older installs can set CPC_ROOT or cpc_root instead of HANDS_HOME. Leave empty on a new install."
     },
     "cpc_cache": {
       "type": "directory",
       "title": "Cache path",
-      "description": "Local Cache directory for continuity skills (default C:\\CPC\\cache). Path + skills only; no Cache MCP.",
-      "default": "C:\\CPC\\cache",
-      "required": true
+      "description": "Optional local Cache directory. When empty, Cache is <Hands home>/cache. Path plus skills only; no Cache MCP. Not uploaded."
     }
   }
 }

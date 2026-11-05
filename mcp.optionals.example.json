@@ -1,0 +1,20 @@
+{
+  "_comment": "Merge opted servers only. stdio only. ${user_config.HANDS_HOME} is filled at install time (or leave Hands home empty and resolve it at runtime before writing a private MCP config). ${CLAUDE_PLUGIN_ROOT} is only for a file that ships in this plugin. Never commit an absolute path.",
+  "mcpServers": {
+    "cpc-voice": {
+      "type": "stdio",
+      "command": "${user_config.HANDS_HOME}/servers/voice.exe",
+      "args": []
+    },
+    "cpc-workflow": {
+      "type": "stdio",
+      "command": "${user_config.HANDS_HOME}/servers/workflow.exe",
+      "args": []
+    },
+    "cpc-manager": {
+      "type": "stdio",
+      "command": "${user_config.HANDS_HOME}/servers/manager.exe",
+      "args": []
+    }
+  }
+}
