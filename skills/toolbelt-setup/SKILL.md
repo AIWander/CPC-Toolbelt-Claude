@@ -12,7 +12,7 @@ Run the `getting-started` skill first if `hands_setup_status` has not been calle
 
 ## Fixed pack (v0.1)
 
-- Wire MCP: `cpc-hands` only, stdio, command `${user_config.HANDS_HOME}/servers/hands.exe`
+- Wire MCP: `cpc-hands` only, stdio, launcher `${CLAUDE_PLUGIN_ROOT}/scripts/launch-hands.cjs` run with `node`
 - A file that ships in this plugin uses `${CLAUDE_PLUGIN_ROOT}`
 - Cache: `CPC_CACHE` or `cpc_cache` if set, otherwise `<Hands home>/cache`. Skills only. **No** `cpc-cache` MCP server
 
@@ -24,7 +24,7 @@ Run the `getting-started` skill first if `hands_setup_status` has not been calle
 
 When the shell can see the plugin, run `node ${CLAUDE_PLUGIN_ROOT}/scripts/resolve-paths.cjs` and use that JSON instead of guessing.
 
-Write `HANDS_HOME` into plugin userConfig when you know the directory so the stdio command expands. If this host cannot expand variables, put the resolved stdio command only in the user's private MCP config. Never commit that path.
+Leave `HANDS_HOME` empty to use the resolved home. Set the plugin option to override that location. For a manually configured connector, put the resolved executable path in the private MCP config.
 
 ## Enable optionals
 

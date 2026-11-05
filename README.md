@@ -9,7 +9,7 @@ This repository is a **Claude directory plugin bundle** (skills, stdio MCP entri
 
 | Piece | How it ships (v0.1) |
 |---|---|
-| Hands | stdio MCP `cpc-hands`. Command is the install-time path `${user_config.HANDS_HOME}/servers/hands.exe` |
+| Hands | Stdio MCP `cpc-hands`, started by `scripts/launch-hands.cjs` |
 | Cache | `CPC_CACHE` if set, otherwise `<Hands home>/cache`. Plugin userConfig plus skills. **No Cache MCP** |
 | Workflow / Manager / Voice | Getting-started skills. Optional stdio servers live in `mcp.optionals.example.json` and stay off until you merge them |
 | Programmer | **Not** in this pack |
@@ -19,7 +19,7 @@ This plugin does **not** ship compiled MCP binaries and does **not** send your f
 
 ## Paths
 
-Resolved at runtime by `scripts/resolve-paths.cjs` and by the `getting-started` skill. Nothing in this repo points at one person's machine.
+The launcher runs `scripts/resolve-paths.cjs` each time Hands starts.
 
 1. **Hands home:** `HANDS_HOME` if set, else `CPC_ROOT` or `cpc_root` (older installs), else `%LOCALAPPDATA%\AIWander\Hands`. When `LOCALAPPDATA` is unset, that is the current user's application-data directory plus `AIWander/Hands`.
 2. **Cache:** `CPC_CACHE` or `cpc_cache` if set, else `<Hands home>/cache`.
@@ -27,12 +27,12 @@ Resolved at runtime by `scripts/resolve-paths.cjs` and by the `getting-started` 
 
 `CPC_ROOT` and `CPC_CACHE` are back-compat. Leave them empty on a new install. There is no fixed-drive fallback.
 
-Set the `HANDS_HOME` plugin value to the resolved directory so `${user_config.HANDS_HOME}` expands. If this host cannot expand variables, write the resolved stdio command only into your private MCP config. Never commit that path back to this repository.
+Leave the `HANDS_HOME` plugin option blank to use the existing `CPC_ROOT` environment variable, the saved `cpc_root` plugin option, or the default. Set `HANDS_HOME` only to override that location.
 
 ## Requirements
 
 1. Hands installed under the resolved Hands home (`servers/hands.exe`).
-2. Claude Code, Claude Desktop, or Cowork, with this plugin's stdio server connected. Files that ship inside the plugin are referenced with `${CLAUDE_PLUGIN_ROOT}`. Server binaries use the install-time Hands home.
+2. Claude Code with Node.js (`node` on its PATH) to run the bundled launcher. For a manually configured local connector in Claude Desktop or Cowork, use the resolved Hands executable path in the private connector config.
 3. `HANDS_HOME` set when you want to override the runtime default. `CPC_CACHE` only when Cache should not live under that home.
 
 ## Install (directory)
@@ -40,7 +40,7 @@ Set the `HANDS_HOME` plugin value to the resolved directory so `${user_config.HA
 1. Open [claude.ai/directory/manage](https://claude.ai/directory/manage) (or find **CPC Toolbelt** in the Claude directory once published).
 2. Add the plugin. Leave Hands home empty to use the runtime default, or set it to the directory the resolver reports.
 3. Run the `getting-started` skill. It calls `hands_setup_status` before any other Hands tool.
-4. Confirm `cpc-hands` is connected. Claude Code starts `.mcp.json` when the plugin is enabled. Desktop and Cowork use the same stdio command in your connector config.
+4. Confirm `cpc-hands` is connected. Claude Code starts `.mcp.json` when the plugin is enabled. For a manual connector, run `node scripts/resolve-paths.cjs` from the plugin folder and use the reported `handsExe` in your private connector config.
 
 ## Install (local / Claude Code)
 
@@ -58,8 +58,8 @@ From the plugin root, `node scripts/resolve-paths.cjs` prints the Hands home and
 
 Every MCP server shipped here is **stdio**. See `.mcp.json` and `mcp.optionals.example.json`.
 
-- Server commands use an install-time path: `${user_config.HANDS_HOME}/servers/<name>.exe`.
-- A file that lives in this plugin uses `${CLAUDE_PLUGIN_ROOT}`.
+- Hands runs through the bundled launcher at `${CLAUDE_PLUGIN_ROOT}/scripts/launch-hands.cjs`.
+- Optional examples use `${user_config.HANDS_HOME}`. Fill the plugin option before using those examples.
 
 This pack does not publish a shared-host port map. Remote use, when you need it, is a private tunnel you sign into yourself. The `getting-started` skill walks through that. There is no public link by default.
 

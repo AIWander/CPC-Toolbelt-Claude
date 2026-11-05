@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
@@ -53,7 +54,7 @@ if (plugin) {
     if (!kw.includes(k)) errors.push('missing keyword: ' + k);
   }
   const userConfig = plugin.userConfig || {};
-  for (const key of ['HANDS_HOME', 'CPC_ROOT', 'CPC_CACHE']) {
+  for (const key of ['HANDS_HOME', 'cpc_root', 'cpc_cache']) {
     const prop = userConfig[key];
     if (!prop) errors.push(key + ' userConfig required');
   }
@@ -105,6 +106,7 @@ function assertStdioServers(rel, doc) {
   }
 }
 
+mustExist('scripts/launch-hands.cjs');
 const mcp = readJson('.mcp.json');
 if (mcp) {
   const keys = Object.keys(mcp.mcpServers || {});
@@ -115,6 +117,18 @@ if (mcp) {
     errors.push('.mcp.json must contain only cpc-hands');
   }
   assertStdioServers('.mcp.json', mcp);
+  const hands = mcp.mcpServers?.['cpc-hands'];
+  if (hands?.command !== 'node' || hands.args?.length !== 1 ||
+      hands.args[0] !== '${CLAUDE_PLUGIN_ROOT}/scripts/launch-hands.cjs') {
+    errors.push('.mcp.json must launch Hands through scripts/launch-hands.cjs');
+  }
+  for (const [key, option] of Object.entries({
+    HANDS_HOME: 'HANDS_HOME', CPC_ROOT: 'cpc_root', CPC_CACHE: 'cpc_cache',
+  })) {
+    if (hands?.env?.['CLAUDE_PLUGIN_OPTION_' + key] !== '${user_config.' + option + '}') {
+      errors.push('.mcp.json must pass through the ' + option + ' plugin option');
+    }
+  }
 }
 
 const optionals = readJson('mcp.optionals.example.json');
@@ -164,7 +178,7 @@ if (readme) {
     errors.push('README must document ${CLAUDE_PLUGIN_ROOT} for plugin-local files');
   }
   if (!/user_config\.HANDS_HOME/.test(readme)) {
-    errors.push('README must document the install-time Hands home variable');
+    errors.push('README must document the Hands home plugin option');
   }
 }
 
@@ -253,11 +267,8 @@ function withEnv(extra, fn) {
     'CLAUDE_PLUGIN_OPTION_CPC_ROOT',
     'CLAUDE_PLUGIN_OPTION_CPC_CACHE',
   ];
-  const prev = {};
-  for (const key of keys) {
-    prev[key] = process.env[key];
-    delete process.env[key];
-  }
+  const prev = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  for (const key of keys) delete process.env[key];
   Object.assign(process.env, extra);
   try {
     return fn();
@@ -272,15 +283,17 @@ function withEnv(extra, fn) {
 const { resolveToolbeltPaths } = require(path.join(root, 'scripts', 'resolve-paths.cjs'));
 
 {
-  const os = await import('os');
   const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'toolbelt-paths-'));
   const handsHome = path.join(fixture, 'hands-home');
   const cpcRoot = path.join(fixture, 'cpc-root');
   const cacheDir = path.join(fixture, 'cache-override');
   const local = path.join(fixture, 'local');
 
+  const rootOverrides = { CPC_ROOT: cpcRoot };
+  if (process.platform !== 'win32') rootOverrides.cpc_root = path.join(fixture, 'legacy');
+
   const preferHands = withEnv(
-    { HANDS_HOME: handsHome, CPC_ROOT: cpcRoot, cpc_root: path.join(fixture, 'legacy'), CPC_CACHE: cacheDir },
+    { ...rootOverrides, HANDS_HOME: handsHome, CPC_CACHE: cacheDir },
     () => resolveToolbeltPaths(),
   );
   if (preferHands.home.source !== 'HANDS_HOME' || preferHands.home.path !== path.resolve(handsHome)) {
@@ -293,7 +306,7 @@ const { resolveToolbeltPaths } = require(path.join(root, 'scripts', 'resolve-pat
     errors.push('hands.exe must stay under the resolved home');
   }
 
-  const fromRoot = withEnv({ CPC_ROOT: cpcRoot, cpc_root: path.join(fixture, 'legacy') }, () => resolveToolbeltPaths());
+  const fromRoot = withEnv(rootOverrides, () => resolveToolbeltPaths());
   if (fromRoot.home.source !== 'CPC_ROOT' || fromRoot.home.path !== path.resolve(cpcRoot)) {
     errors.push('CPC_ROOT should override the default Hands home when HANDS_HOME is unset');
   }
@@ -321,6 +334,13 @@ const { resolveToolbeltPaths } = require(path.join(root, 'scripts', 'resolve-pat
     errors.push('an unresolved HANDS_HOME must fall through to CPC_ROOT');
   }
 
+  if (process.platform === 'win32') {
+    const fromProfile = withEnv({ XDG_DATA_HOME: local }, () => resolveToolbeltPaths());
+    if (fromProfile.home.path !== path.join(os.homedir(), 'AppData', 'Local', 'AIWander', 'Hands')) {
+      errors.push('Windows must use the profile AppData/Local path when LOCALAPPDATA is unset');
+    }
+  }
+
   const defaults = withEnv({ LOCALAPPDATA: local, cpc_cache: cacheDir }, () => resolveToolbeltPaths());
   const expectedHome = path.join(local, 'AIWander', 'Hands');
   if (defaults.home.source !== 'default' || defaults.home.path !== expectedHome) {
@@ -338,10 +358,12 @@ const { resolveToolbeltPaths } = require(path.join(root, 'scripts', 'resolve-pat
     errors.push('default resolution emitted a machine-specific path');
   }
 
-  const cli = spawnSync(process.execPath, [path.join(root, 'scripts', 'resolve-paths.cjs')], {
-    encoding: 'utf8',
-    env: { ...process.env, HANDS_HOME: '', CPC_ROOT: '', cpc_root: '', CPC_CACHE: '', cpc_cache: '', LOCALAPPDATA: local },
-  });
+  const cli = withEnv({ LOCALAPPDATA: local }, () =>
+    spawnSync(process.execPath, [path.join(root, 'scripts', 'resolve-paths.cjs')], {
+      encoding: 'utf8',
+      timeout: 5000,
+    }),
+  );
   if (cli.status !== 0) errors.push('resolve-paths.cjs exited ' + cli.status);
   try {
     const cliJson = JSON.parse((cli.stdout || '').trim());

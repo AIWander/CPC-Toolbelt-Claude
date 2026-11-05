@@ -2,8 +2,13 @@
   "mcpServers": {
     "cpc-hands": {
       "type": "stdio",
-      "command": "${user_config.HANDS_HOME}/servers/hands.exe",
-      "args": []
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/launch-hands.cjs"],
+      "env": {
+        "CLAUDE_PLUGIN_OPTION_HANDS_HOME": "${user_config.HANDS_HOME}",
+        "CLAUDE_PLUGIN_OPTION_CPC_ROOT": "${user_config.cpc_root}",
+        "CLAUDE_PLUGIN_OPTION_CPC_CACHE": "${user_config.cpc_cache}"
+      }
     }
   }
 }

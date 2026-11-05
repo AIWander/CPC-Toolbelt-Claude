@@ -25,14 +25,14 @@
     "HANDS_HOME": {
       "type": "directory",
       "title": "Hands install home",
-      "description": "Directory that contains servers/hands.exe. Leave empty to resolve %LOCALAPPDATA%\\AIWander\\Hands at runtime (the current user's application-data directory plus AIWander/Hands when that variable is unset). Set this at install time so the stdio command can expand. Not uploaded."
+      "description": "Directory that contains servers/hands.exe. Leave empty to resolve %LOCALAPPDATA%\\AIWander\\Hands at runtime (the current user's application-data directory plus AIWander/Hands when that variable is unset). The stdio launcher reads this value at startup."
     },
-    "CPC_ROOT": {
+    "cpc_root": {
       "type": "directory",
       "title": "CPC install root (back-compat)",
       "description": "Optional. Used as the Hands home only when HANDS_HOME is unset. Older installs can set CPC_ROOT or cpc_root instead of HANDS_HOME. Leave empty on a new install."
     },
-    "CPC_CACHE": {
+    "cpc_cache": {
       "type": "directory",
       "title": "Cache path",
       "description": "Optional local Cache directory. When empty, Cache is <Hands home>/cache. Path plus skills only; no Cache MCP. Not uploaded."

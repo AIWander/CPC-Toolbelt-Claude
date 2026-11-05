@@ -17,7 +17,7 @@ Resolve these at runtime. Do not invent a drive letter or a home directory. When
 2. Cache: `CPC_CACHE` or `cpc_cache` if set, else `<Hands home>/cache`.
 3. Hands binary: `<Hands home>/servers/hands.exe` (or the executable `hands_setup_status` reports).
 
-Set the plugin userConfig `HANDS_HOME` to that home so the stdio command `${user_config.HANDS_HOME}/servers/hands.exe` expands. If this host cannot expand variables, write the resolved command only into the user's private MCP config. Never commit an absolute path to the plugin repo, and never put a key or token in that config.
+The bundled stdio launcher resolves the Hands executable at startup. Confirm that `node` is on Claude Code’s PATH. Set the `HANDS_HOME` plugin option only to override the resolved home. For a manually configured connector, put the resolved executable path in the private MCP config.
 
 ## Wire Hands
 

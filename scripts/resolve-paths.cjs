@@ -8,8 +8,7 @@
  * No machine-specific fallback.
  *
  * Claude plugin userConfig is also read from CLAUDE_PLUGIN_OPTION_<KEY>
- * (hook processes). MCP configs should use ${user_config.KEY} or
- * ${CLAUDE_PLUGIN_ROOT} rather than a committed absolute path.
+ * (hook processes and the environment mapping in .mcp.json).
  */
 const os = require('os');
 const path = require('path');
@@ -49,6 +48,9 @@ function firstResolved(names) {
 function defaultHandsHome() {
   const local = nonempty('LOCALAPPDATA');
   if (local) return path.join(local, 'AIWander', 'Hands');
+  if (process.platform === 'win32') {
+    return path.join(os.homedir(), 'AppData', 'Local', 'AIWander', 'Hands');
+  }
   if (process.platform === 'darwin') {
     return path.join(os.homedir(), 'Library', 'Application Support', 'AIWander', 'Hands');
   }
